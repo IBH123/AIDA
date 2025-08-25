@@ -1,7 +1,7 @@
 {
   "preferences": {
     "workday_start": "2025-08-25T09:00:00-07:00",
-    "workday_end": "2025-08-25T17:30:00-07:00",
+    "workday_end": "2025-08-25T19:30:00-07:00",
     "pomodoro_min": 25,
     "break_min": 5,
     "long_break_min": 15,
@@ -10,61 +10,70 @@
   "tasks": [
     {
       "id": "task-1",
-      "title": "Revise STOTEN cover letter",
-      "estimate_min": 60,
-      "priority": 4,
+      "title": "Revise WFIP3 paper: work on stability analysis plot",
+      "estimate_min": 150,
+      "priority": 1,
       "deadline": "2025-08-27T23:59:00-07:00",
       "energy": "deep",
-      "requires_deep_work": true,
-      "notes": "Need to address reviewer comments and polish language"
+      "requires_deep_work": false,
+      "notes": "Need to produce publishable figures"
     },
     {
       "id": "task-2", 
-      "title": "Reply to reviewer 2",
+      "title": "Revise WFIP3 paper: work on supplementary wave configuration plot",
       "estimate_min": 50,
-      "priority": 3,
-      "energy": "deep",
-      "requires_deep_work": true,
-      "notes": "Technical questions about methodology"
+      "priority": 2,
+      "deadline": "2025-08-27T23:59:00-07:00",
+      "energy": "light",
+      "requires_deep_work": false,
+      "notes": "Use Jinliang's old figure to produce it quickly, it is just a figure in the supplementary"
     },
     {
       "id": "task-3",
-      "title": "Update project documentation",
-      "estimate_min": 30,
-      "priority": 2,
-      "energy": "light",
-      "notes": "README and API docs need updating"
+      "title": "Revise WFIP3 paper: work on text of stability analysis paragraph",
+      "estimate_min": 50,
+      "priority": 1,
+      "deadline": "2025-08-27T23:59:00-07:00",
+      "energy": "deep",
+      "requires_deep_work": false,
+      "notes": "Just produce"
     },
     {
       "id": "task-4",
-      "title": "Email responses",
-      "estimate_min": 20,
-      "priority": 1,
+      "title": "Revise WFIP3 paper: work on validation session with power plot removed",
+      "estimate_min": 50,
+      "priority": 3,
+      "deadline": "2025-08-27T23:59:00-07:00",
       "energy": "light",
-      "notes": "Non-urgent email backlog"
+      "requires_deep_work": false,
+      "notes": "Work on supplementary as well as the validation session"
     },
     {
       "id": "task-5",
-      "title": "Review team pull requests",
-      "estimate_min": 45,
-      "priority": 3,
+      "title": "Work on LDRD FVCOM-MP module",
+      "estimate_min": 75,
+      "priority": 4,
+      "deadline": "2025-08-30T23:59:00-07:00",
       "energy": "deep", 
-      "requires_deep_work": true,
-      "notes": "3 PRs pending review"
+      "requires_deep_work": false,
+      "notes": "Work on phase 2 get those input ready"
+    },
+    {
+      "id": "task-6",
+      "title": "Email to the rental agency",
+      "estimate_min": 25,
+      "priority": 4,
+      "energy": "light", 
+      "requires_deep_work": false,
+      "notes": "Follow up on rental application"
     }
   ],
   "events": [
     {
       "start": "2025-08-25T11:00:00-07:00",
-      "end": "2025-08-25T12:00:00-07:00", 
-      "title": "Team sync",
+      "end": "2025-08-25T11:30:00-07:00", 
+      "title": "Meeting with Marlee",
       "location": "Zoom"
-    },
-    {
-      "start": "2025-08-25T14:30:00-07:00",
-      "end": "2025-08-25T15:00:00-07:00",
-      "title": "1:1 with manager",
-      "location": "Office"
     }
   ]
 }

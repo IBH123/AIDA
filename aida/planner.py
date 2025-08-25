@@ -103,13 +103,13 @@ def create_pomodoro_block(
     end_time = start_time + timedelta(minutes=duration_minutes)
     
     if block_type == "pomodoro":
-        title = f"🍅 {task.title}"
+        title = task.title
         task_id = task.id
     elif block_type == "break":
-        title = "☕ Break"
+        title = "Break"
         task_id = None
     else:  # long_break
-        title = "🌟 Long Break"
+        title = "Long Break"
         task_id = None
     
     return Block(
@@ -121,14 +121,24 @@ def create_pomodoro_block(
     )
 
 
-def plan_day(request: PlanRequest) -> PlanResponse:
+def plan_day(request: PlanRequest, start_from_now: bool = True) -> PlanResponse:
     """Generate a complete day plan from tasks and events"""
     prefs = request.preferences
-    tasks = sorted(request.tasks, key=lambda t: calculate_task_score(t, prefs.workday_start), reverse=True)
+    
+    # Determine actual start time
+    if start_from_now:
+        current_time = datetime.now(prefs.workday_start.tzinfo)
+        actual_start = max(current_time, prefs.workday_start)
+        current_time_used = current_time > prefs.workday_start
+    else:
+        actual_start = prefs.workday_start
+        current_time_used = False
+    
+    tasks = sorted(request.tasks, key=lambda t: calculate_task_score(t, actual_start), reverse=True)
     events = request.events
     
-    # Create work window
-    work_window = (prefs.workday_start, prefs.workday_end)
+    # Create work window with actual start time
+    work_window = (actual_start, prefs.workday_end)
     
     # Add buffers around events and create busy intervals
     busy_intervals = add_event_buffers(events)
@@ -146,7 +156,7 @@ def plan_day(request: PlanRequest) -> PlanResponse:
             start=event.start,
             end=event.end,
             type="event",
-            title=f"📅 {event.title}",
+            title=event.title,
             task_id=None
         )
         for event in events
@@ -225,10 +235,19 @@ def plan_day(request: PlanRequest) -> PlanResponse:
     break_blocks = [b for b in all_blocks if b.type in ["break", "long_break"]]
     unscheduled_tasks = [t.title for t in tasks]
     
+    # Create tomorrow suggestions for unscheduled tasks
+    tomorrow_suggestions = []
+    for task in tasks:
+        cycles_needed = segment_task(task, prefs.pomodoro_min)
+        total_time = cycles_needed * prefs.pomodoro_min + (cycles_needed - 1) * prefs.break_min
+        tomorrow_suggestions.append(f"{task.title} ({total_time}min, {cycles_needed} pomodoros)")
+    
     total_break_time = sum(b.duration_minutes for b in break_blocks)
     total_scheduled_time = sum(b.duration_minutes for b in all_blocks if b.type != "event")
-    work_day_minutes = (prefs.workday_end - prefs.workday_start).total_seconds() / 60
-    free_time = max(0, work_day_minutes - total_scheduled_time)
+    
+    # Calculate free time based on actual work window used
+    actual_work_minutes = (work_window[1] - work_window[0]).total_seconds() / 60
+    free_time = max(0, actual_work_minutes - total_scheduled_time)
     
     deep_work_windows = [
         f"{b.start.strftime('%H:%M')}-{b.end.strftime('%H:%M')}"
@@ -242,7 +261,9 @@ def plan_day(request: PlanRequest) -> PlanResponse:
         scheduled_tasks=len(scheduled_task_ids),
         unscheduled_tasks=unscheduled_tasks,
         free_time_minutes=int(free_time),
-        deep_work_windows=deep_work_windows
+        deep_work_windows=deep_work_windows,
+        tomorrow_suggestions=tomorrow_suggestions,
+        current_time_used=current_time_used
     )
     
     return PlanResponse(blocks=all_blocks, summary=summary)

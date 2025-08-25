@@ -37,7 +37,7 @@ def load_plan_request(file_path: Path) -> PlanRequest:
 
 def display_plan(blocks: List[Block], summary: dict):
     """Display plan in a nice table format"""
-    table = Table(title="📅 Your Day Plan")
+    table = Table(title="Your Day Plan")
     table.add_column("Time", style="cyan", no_wrap=True)
     table.add_column("Duration", justify="center")
     table.add_column("Type", style="magenta")
@@ -50,14 +50,14 @@ def display_plan(blocks: List[Block], summary: dict):
         
         duration = f"{block.duration_minutes}m"
         
-        # Add emoji based on block type
-        emoji_map = {
-            'pomodoro': '🍅',
-            'break': '☕',
-            'long_break': '🌟',
-            'event': '📅'
+        # Use text-based indicators instead of emojis for better Windows compatibility
+        type_map = {
+            'pomodoro': 'WORK',
+            'break': 'BREAK',
+            'long_break': 'LONG-BREAK',
+            'event': 'EVENT'
         }
-        type_display = f"{emoji_map.get(block.type, '⏰')} {block.type}"
+        type_display = type_map.get(block.type, 'UNKNOWN')
         
         table.add_row(time_range, duration, type_display, block.title)
     
@@ -65,20 +65,32 @@ def display_plan(blocks: List[Block], summary: dict):
     
     # Display summary
     summary_text = f"""
-📊 **Plan Summary**
+** Plan Summary **
 • Total Pomodoros: {summary.total_pomodoros}
 • Break Time: {summary.total_break_time} minutes
 • Scheduled Tasks: {summary.scheduled_tasks}
 • Free Time: {summary.free_time_minutes} minutes
 """
     
+    if summary.current_time_used:
+        summary_text += "• TIME: Started from current time (not workday start)\n"
+    
     if summary.unscheduled_tasks:
-        summary_text += f"• Unscheduled: {', '.join(summary.unscheduled_tasks)}\n"
+        summary_text += f"• WARNING: Unscheduled: {', '.join(summary.unscheduled_tasks)}\n"
     
     if summary.deep_work_windows:
-        summary_text += f"• Deep Work: {', '.join(summary.deep_work_windows)}\n"
+        summary_text += f"• FOCUS: Deep Work: {', '.join(summary.deep_work_windows)}\n"
     
     console.print(Panel(summary_text, title="Summary", border_style="blue"))
+    
+    # Display tomorrow suggestions if any
+    if summary.tomorrow_suggestions:
+        tomorrow_text = "\n".join([f"• {suggestion}" for suggestion in summary.tomorrow_suggestions])
+        console.print(Panel(
+            tomorrow_text, 
+            title="Suggested for Tomorrow", 
+            border_style="yellow"
+        ))
 
 
 @app.command()
@@ -86,13 +98,14 @@ def plan(
     plan_file: Path = typer.Argument(..., help="JSON file with plan request"),
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Save plan to JSON file"),
     ics: Optional[Path] = typer.Option(None, "--ics", help="Export to ICS file"),
-    quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress output")
+    quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress output"),
+    start_from_now: bool = typer.Option(True, "--start-from-now/--start-from-workday", help="Start planning from current time vs workday start")
 ):
     """📋 Generate a day plan from tasks and events"""
     
     # Load and process plan
     request = load_plan_request(plan_file)
-    response = plan_day(request)
+    response = plan_day(request, start_from_now=start_from_now)
     
     if not quiet:
         display_plan(response.blocks, response.summary)
@@ -114,13 +127,14 @@ def run(
     plan_file: Path = typer.Argument(..., help="JSON file with plan request"),
     start_index: int = typer.Option(0, "--start", "-s", help="Start from block index"),
     tts: bool = typer.Option(False, "--tts", help="Enable text-to-speech"),
-    save_log: bool = typer.Option(True, "--save/--no-save", help="Save session log")
+    save_log: bool = typer.Option(True, "--save/--no-save", help="Save session log"),
+    start_from_now: bool = typer.Option(True, "--start-from-now/--start-from-workday", help="Start planning from current time vs workday start")
 ):
     """🏃 Generate plan and run timer"""
     
     # Load and process plan
     request = load_plan_request(plan_file)
-    response = plan_day(request)
+    response = plan_day(request, start_from_now=start_from_now)
     
     rprint("📋 Plan generated successfully!")
     display_plan(response.blocks, response.summary)

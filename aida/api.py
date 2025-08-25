@@ -41,10 +41,10 @@ async def health_check():
 
 
 @app.post("/v1/plan", response_model=PlanResponse)
-async def create_plan(request: PlanRequest):
+async def create_plan(request: PlanRequest, start_from_now: bool = True):
     """Generate a day plan from tasks and events"""
     try:
-        response = plan_day(request)
+        response = plan_day(request, start_from_now=start_from_now)
         return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Planning error: {str(e)}")

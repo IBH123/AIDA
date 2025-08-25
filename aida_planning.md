@@ -313,10 +313,27 @@ energy_match = 2 if requires_deep_work and block_start in [9,12) else 0
 ---
 
 ## 17) Roadmap
-- **v0.1 (MVP)**: CLI + planner + timer + JSON logs.
+- **v0.1 (MVP)**: CLI + planner + timer + JSON logs. ✅ **COMPLETED**
+- **v0.1.1**: Real-time planning + tomorrow overflow suggestions. ✅ **COMPLETED**
 - **v0.2**: ICS export, configurable buffers, lunch detection.
 - **v0.3**: FastAPI service, simple web page (Swagger only), MCP tool stubs.
 - **v0.4**: Email draft + agenda generator (human‑in‑the‑loop send).
+
+### v0.1.1 Real-Time Planning Enhancements
+**Problem**: Original planner used `workday_start` from preferences, ignoring current time. Tasks that couldn't fit were just marked "unscheduled" without actionable suggestions.
+
+**Solution**: 
+- **Current-time planning**: Use `max(now, workday_start)` as actual planning start
+- **Tomorrow overflow**: Track unscheduled tasks and suggest them for next day
+- **Better UX**: Clear display of what couldn't fit today with time estimates
+
+**Implementation**:
+- Enhanced `PlanSummary` model with `tomorrow_suggestions` and `current_time_used` fields
+- Modified `plan_day()` function to accept `start_from_now` parameter
+- Updated CLI to display tomorrow suggestions prominently
+- Added API flexibility for time behavior control
+
+**Use Case**: User runs `aida plan` at 2PM → planning starts from 2PM, suggests overflow for tomorrow.
 
 ---
 

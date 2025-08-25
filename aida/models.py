@@ -116,6 +116,8 @@ class PlanSummary(BaseModel):
     unscheduled_tasks: List[str] = Field(default_factory=list)
     free_time_minutes: int
     deep_work_windows: List[str] = Field(default_factory=list)
+    tomorrow_suggestions: List[str] = Field(default_factory=list)
+    current_time_used: bool = False
 
 
 class PlanResponse(BaseModel):
