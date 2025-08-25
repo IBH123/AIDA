@@ -1,0 +1,70 @@
+{
+  "preferences": {
+    "workday_start": "2025-08-25T09:00:00-07:00",
+    "workday_end": "2025-08-25T17:30:00-07:00",
+    "pomodoro_min": 25,
+    "break_min": 5,
+    "long_break_min": 15,
+    "cycles_per_long_break": 4
+  },
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Revise STOTEN cover letter",
+      "estimate_min": 60,
+      "priority": 4,
+      "deadline": "2025-08-27T23:59:00-07:00",
+      "energy": "deep",
+      "requires_deep_work": true,
+      "notes": "Need to address reviewer comments and polish language"
+    },
+    {
+      "id": "task-2", 
+      "title": "Reply to reviewer 2",
+      "estimate_min": 50,
+      "priority": 3,
+      "energy": "deep",
+      "requires_deep_work": true,
+      "notes": "Technical questions about methodology"
+    },
+    {
+      "id": "task-3",
+      "title": "Update project documentation",
+      "estimate_min": 30,
+      "priority": 2,
+      "energy": "light",
+      "notes": "README and API docs need updating"
+    },
+    {
+      "id": "task-4",
+      "title": "Email responses",
+      "estimate_min": 20,
+      "priority": 1,
+      "energy": "light",
+      "notes": "Non-urgent email backlog"
+    },
+    {
+      "id": "task-5",
+      "title": "Review team pull requests",
+      "estimate_min": 45,
+      "priority": 3,
+      "energy": "deep", 
+      "requires_deep_work": true,
+      "notes": "3 PRs pending review"
+    }
+  ],
+  "events": [
+    {
+      "start": "2025-08-25T11:00:00-07:00",
+      "end": "2025-08-25T12:00:00-07:00", 
+      "title": "Team sync",
+      "location": "Zoom"
+    },
+    {
+      "start": "2025-08-25T14:30:00-07:00",
+      "end": "2025-08-25T15:00:00-07:00",
+      "title": "1:1 with manager",
+      "location": "Office"
+    }
+  ]
+}
