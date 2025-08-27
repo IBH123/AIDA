@@ -133,6 +133,7 @@ class TimerState(BaseModel):
     start_time: Optional[datetime] = None
     paused_duration: int = 0  # seconds
     completed_blocks: List[int] = Field(default_factory=list)
+    current_block_actual_start: Optional[datetime] = None
 
 
 class SessionLog(BaseModel):

@@ -243,7 +243,7 @@ def plan_day(request: PlanRequest, start_from_now: bool = True) -> PlanResponse:
         tomorrow_suggestions.append(f"{task.title} ({total_time}min, {cycles_needed} pomodoros)")
     
     total_break_time = sum(b.duration_minutes for b in break_blocks)
-    total_scheduled_time = sum(b.duration_minutes for b in all_blocks if b.type != "event")
+    total_scheduled_time = sum(b.duration_minutes for b in all_blocks)
     
     # Calculate free time based on actual work window used
     actual_work_minutes = (work_window[1] - work_window[0]).total_seconds() / 60

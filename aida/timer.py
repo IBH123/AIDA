@@ -54,12 +54,24 @@ class PomodoroTimer:
         }
         
         emoji = emoji_map.get(block.type, '⏰')
-        start_time = block.start.strftime('%H:%M')
-        end_time = block.end.strftime('%H:%M')
+        
+        # Use current time as actual start time for real-time tracking
+        actual_start_time = datetime.now(block.start.tzinfo)
+        self.state.current_block_actual_start = actual_start_time
+        
+        # Calculate actual end time based on current start
+        actual_end_time = actual_start_time + timedelta(minutes=block.duration_minutes)
+        
+        # Display both planned and actual times for reference
+        planned_start = block.start.strftime('%H:%M')
+        planned_end = block.end.strftime('%H:%M')
+        actual_start_str = actual_start_time.strftime('%H:%M')
+        actual_end_str = actual_end_time.strftime('%H:%M')
         duration = block.duration_minutes
         
         message = f"\n{emoji} Starting: {block.title}"
-        message += f"\n⏰ Time: {start_time} - {end_time} ({duration} min)"
+        message += f"\n📅 Planned: {planned_start} - {planned_end} ({duration} min)"
+        message += f"\n⏰ Actual:  {actual_start_str} - {actual_end_str} ({duration} min)"
         
         if block.type == 'pomodoro':
             message += f"\n🎯 Focus on your task!"
@@ -155,21 +167,34 @@ class PomodoroTimer:
             self.state.is_running = False
     
     def _run_countdown(self, duration_seconds: int, block: Block):
-        """Run countdown timer for a block"""
-        remaining = duration_seconds
+        """Run countdown timer for a block using real-time tracking"""
+        # Get actual start time (set in _default_block_start)
+        start_time = getattr(self.state, 'current_block_actual_start', datetime.now(block.start.tzinfo))
+        end_time = start_time + timedelta(seconds=duration_seconds)
         
-        while remaining > 0 and self.state.is_running:
-            mins, secs = divmod(remaining, 60)
+        while self.state.is_running:
+            current_time = datetime.now(block.start.tzinfo)
+            
+            # Check if we've reached the end time
+            if current_time >= end_time:
+                break
+                
+            # Calculate remaining time based on actual time
+            remaining_seconds = int((end_time - current_time).total_seconds())
+            
+            if remaining_seconds <= 0:
+                break
+                
+            mins, secs = divmod(remaining_seconds, 60)
             
             # Show progress every minute and in last 10 seconds
-            if remaining % 60 == 0 or remaining <= 10:
-                if remaining > 60:
+            if remaining_seconds % 60 == 0 or remaining_seconds <= 10:
+                if remaining_seconds > 60:
                     print(f"⏳ {mins:02d}:{secs:02d} remaining")
                 else:
-                    print(f"⏳ {remaining} seconds...")
+                    print(f"⏳ {remaining_seconds} seconds...")
             
             time.sleep(1)
-            remaining -= 1
     
     def stop(self):
         """Stop the timer"""
