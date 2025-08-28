@@ -1,60 +1,85 @@
 # 🍅 AIDA - Adaptive Intelligent Day Assistant
 
-**Turn a brief morning check-in into a realistic day plan and run it with a Pomodoro timer.**
+**Your JARVIS-style AI assistant that turns natural conversation into an optimized day plan.**
 
-AIDA helps you transform your daily goals and meetings into a structured, time-blocked schedule with built-in Pomodoro cycles and breaks. No more guessing how to fit everything in—just provide your tasks and fixed events, and AIDA creates an executable plan for your day.
+AIDA v0.2 introduces an intelligent conversational interface inspired by JARVIS from Iron Man. Simply tell AIDA about your day in natural language, and it will create a structured, time-blocked schedule with built-in Pomodoro cycles and breaks. No more JSON files or complex input formats—just talk to AIDA like you would a personal assistant.
 
-## ✨ Features (v0.1)
+## ✨ Features (v0.2)
 
-- **Smart Planning**: Converts tasks and events into chronological Pomodoro blocks
+### 🤖 JARVIS-Style Conversational Assistant
+- **Natural Language Planning**: Tell AIDA your tasks and meetings conversationally
+- **Intelligent Extraction**: Automatically understands priorities, time estimates, and scheduling preferences
+- **Smart Follow-ups**: Asks clarifying questions to optimize your schedule
+- **Professional Personality**: Witty, sophisticated, and goal-oriented like a trusted aide
+
+### 📋 Smart Planning & Execution
+- **Real-time Planning**: Plans from current time with tomorrow overflow suggestions
 - **Realistic Scheduling**: Respects fixed meetings with buffers and handles task segmentation
 - **Built-in Timer**: Run your plan with a console-based Pomodoro timer
-- **Flexible Formats**: JSON input/output, ICS calendar export
-- **Local Privacy**: All data stays on your machine
-- **Dual Interface**: CLI commands and REST API
+- **Local Privacy**: All conversations and data stay on your machine
+- **Dual Interface**: Conversational assistant and traditional CLI commands
 
 ## 🚀 Quick Start
 
-### Installation
+### Installation & Setup
 
 ```bash
 # Clone repository
-git clone <repository-url>
-cd aida
+git clone https://github.com/IBH123/AIDA.git
+cd AIDA
 
-# Install with development dependencies
-make install-dev
+# Set up virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # macOS/Linux
 
-# Or just the package
-pip install -e .
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up OpenAI API key for conversational features
+echo "OPENAI_API_KEY=your_api_key_here" > .env
+echo "AIDA_LLM_MODEL=gpt-4o-mini" >> .env
 ```
 
-### Basic Usage
+### Quick Start - Talk to AIDA!
 
-1. **Plan your day**:
+1. **🗣️ Conversational Planning (NEW!)**:
    ```bash
-   aida plan examples/today.json
+   python run_aida.py assistant
+   # Or: aida assistant
+   ```
+   ```
+   AIDA: Good morning! I'm AIDA, ready to help you plan your day efficiently.
+         What are your priorities today?
+   
+   You: I need to work on the WFIP3 paper and I have a team meeting at 2pm
+   AIDA: Excellent. The WFIP3 paper sounds important. How much time do you estimate?
+   You: About 3 hours, and yes 10 minutes buffer for the meeting please
+   AIDA: Perfect. Any other tasks or commitments I should know about?
+   You: That's all for now
+   AIDA: Understood. Let me generate your optimized schedule...
    ```
 
-2. **Run with timer**:
+2. **📋 Traditional Planning**:
    ```bash
-   aida run examples/today.json
+   python run_aida.py plan examples/today.json
    ```
 
-3. **Export to calendar**:
+3. **⏰ Run with Timer**:
    ```bash
-   aida plan examples/today.json --ics my-plan.ics
-   ```
-
-4. **Start API server**:
-   ```bash
-   make run-api
-   # API docs at http://localhost:8000/docs
+   python run_aida.py run examples/today.json
    ```
 
 ## 📋 How It Works
 
-1. **Input**: Provide tasks (with estimates/priorities) and fixed events
+### 🗣️ Conversational Mode (v0.2)
+1. **Natural Conversation**: Tell AIDA about your tasks, meetings, and priorities in plain English
+2. **Smart Extraction**: AIDA understands time estimates, deadlines, and task complexity automatically
+3. **Intelligent Planning**: Segments tasks into Pomodoro cycles and optimizes around your schedule
+4. **Real-time Execution**: Start your timer immediately and follow your optimized plan
+
+### 📊 Traditional Mode
+1. **JSON Input**: Provide structured tasks and events via JSON files
 2. **Planning**: AIDA segments tasks into Pomodoro cycles and packs them around your events
 3. **Scheduling**: Creates time blocks with proper breaks (5min regular, 15min every 4th cycle)
 4. **Execution**: Run the timer to follow your plan with console notifications
@@ -88,15 +113,20 @@ pip install -e .
 
 ## 🛠️ Commands
 
-### CLI Commands
+### 🤖 Conversational Commands (NEW!)
 
-- `aida plan <file>` - Generate and display day plan  
-- `aida run <file>` - Generate plan and start timer
-- `aida timer <plan-file>` - Run timer on existing plan
+- `python run_aida.py assistant` - Start JARVIS-style conversation  
+- `aida assistant` - Alternative entry point for conversational planning
+
+### 📊 Traditional CLI Commands
+
+- `python run_aida.py plan <file>` - Generate and display day plan  
+- `python run_aida.py run <file>` - Generate plan and start timer
+- `python run_aida.py timer <plan-file>` - Run timer on existing plan
 - `aida config --show` - Show current preferences
 - `aida version` - Show version info
 
-### API Endpoints
+### 🌐 API Endpoints (Coming in v0.3)
 
 - `POST /v1/plan` - Generate day plan
 - `GET /v1/plan/ics` - Export plan as ICS
@@ -109,40 +139,56 @@ pip install -e .
 ### Project Structure
 
 ```
-aida/
+AIDA/
 ├── aida/
-│   ├── models.py      # Pydantic data models
+│   ├── models.py      # Pydantic data models (enhanced for v0.2)
 │   ├── planner.py     # Core planning algorithm
 │   ├── timer.py       # Pomodoro timer implementation
-│   ├── cli.py         # CLI interface
-│   ├── api.py         # FastAPI application
+│   ├── assistant.py   # 🆕 JARVIS-style conversational AI
+│   ├── cli.py         # CLI interface (enhanced for assistant)
+│   ├── api.py         # FastAPI application (coming v0.3)
 │   ├── storage.py     # Local data persistence
 │   └── ics.py         # Calendar export
 ├── examples/
 │   └── today.json     # Sample plan request
 ├── tests/             # Test suite
-└── pyproject.toml     # Package configuration
+├── run_aida.py        # 🆕 Main launcher script
+├── aida.bat           # 🆕 Windows batch launcher
+├── requirements.txt   # 🆕 Python dependencies
+└── .env.example       # 🆕 Environment variables template
 ```
 
 ### Development Commands
 
 ```bash
-make install-dev    # Install with dev dependencies
-make format         # Format code with black/ruff
-make lint          # Run linting
-make typecheck     # Run mypy type checking
-make test          # Run test suite
-make run-api       # Start development API server
+# Set up development environment
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+# Test the assistant
+python run_aida.py assistant
+
+# Test traditional planning
+python run_aida.py plan examples/today.json
+
+# Run tests
+pytest tests/ -v
+
+# Format code
+black aida/
+ruff check aida/
 ```
 
 ### Testing
 
 ```bash
 # Run all tests
-make test
+pytest tests/ -v
 
 # Test specific functionality
 pytest tests/test_planner.py -v
+pytest tests/test_models.py -v
 
 # Test with coverage
 pytest --cov=aida tests/
@@ -150,11 +196,25 @@ pytest --cov=aida tests/
 
 ## ⚙️ Configuration
 
+### Environment Variables (v0.2)
+Create a `.env` file in the project root:
+
+```bash
+# Required for conversational features
+OPENAI_API_KEY=your_openai_api_key_here
+AIDA_LLM_MODEL=gpt-4o-mini  # Recommended for cost efficiency
+
+# Optional - customize JARVIS personality
+AIDA_ASSISTANT_PERSONALITY=professional  # professional, friendly, witty
+```
+
+### Data Storage
 AIDA stores preferences and logs in `~/.aida/`:
 
 - `prefs.json` - User preferences (work hours, break durations)
 - `logs/` - Daily session logs in JSONL format
-- `aida.db` - Optional SQLite database
+- `plans/` - 🆕 Generated conversation plans (auto-saved)
+- `conversations/` - 🆕 Chat history (optional)
 
 ## 📊 Algorithm Details
 
@@ -170,18 +230,21 @@ AIDA stores preferences and logs in `~/.aida/`:
 
 ## 🔄 Roadmap
 
-- **v0.1** (Current): CLI + API + Basic timer ✅
-- **v0.2**: ICS export + Configurable buffers + Lunch detection
-- **v0.3**: Web UI + MCP tool integration + Advanced scheduling
-- **v0.4**: Email integration + Multi-day planning
+- **v0.1**: CLI + Basic timer ✅
+- **v0.1.1**: Real-time planning + Tomorrow overflow suggestions ✅
+- **v0.2**: 🆕 **JARVIS-style conversational assistant with LLM integration** ✅
+- **v0.3**: FastAPI service + ICS export + Configurable buffers
+- **v0.4**: Web UI + MCP tool integration + Advanced scheduling  
+- **v0.5**: Email integration + Multi-day planning + Calendar sync
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests
-4. Run `make format lint typecheck test`
-5. Submit a pull request
+4. Run `black aida/` and `ruff check aida/`
+5. Test with `pytest tests/ -v`
+6. Submit a pull request
 
 ## 📄 License
 
@@ -189,10 +252,18 @@ MIT License - See LICENSE file for details.
 
 ## 🙋‍♂️ Support
 
-- Check [examples/today.json](examples/today.json) for input format
-- API documentation at `/docs` when running server
+- Start with `python run_aida.py assistant` for conversational planning
+- Check [examples/today.json](examples/today.json) for traditional input format
 - File issues on GitHub for bugs/features
+- See [aida_planning.md](aida_planning.md) for detailed technical documentation
+
+## 💰 Cost Information (v0.2)
+
+AIDA uses OpenAI's API for conversational features:
+- **Daily usage**: ~6,000-15,000 tokens (3-5 planning sessions)
+- **Cost**: ~$0.01-0.03/day with gpt-4o-mini
+- **Privacy**: All conversations happen via API, no data stored by OpenAI
 
 ---
 
-**Made with ❤️ for focused productivity**
+**Made with ❤️ for focused productivity • Now with AI-powered conversation! 🤖**
