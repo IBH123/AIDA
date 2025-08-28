@@ -1,0 +1,29 @@
+{
+  "preferences": {
+    "workday_start": "2025-08-27T08:00:00-07:00",
+    "workday_end": "2025-08-27T18:00:00-07:00",
+    "pomodoro_min": 1,
+    "break_min": 1,
+    "long_break_min": 2,
+    "cycles_per_long_break": 4
+  },
+  "tasks": [
+    {
+      "id": "demo-task",
+      "title": "Quick demo task for timer testing",
+      "estimate_min": 2,
+      "priority": 1,
+      "energy": "light",
+      "requires_deep_work": false,
+      "notes": "Short task for demo purposes"
+    }
+  ],
+  "events": [
+    {
+      "start": "2025-08-27T09:00:00-07:00",
+      "end": "2025-08-27T09:05:00-07:00",
+      "title": "Demo meeting (5 min event)",
+      "location": "Test Room"
+    }
+  ]
+}

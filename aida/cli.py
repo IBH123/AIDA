@@ -15,8 +15,9 @@ from .planner import plan_day
 from .timer import run_timer
 from .ics import export_to_ics
 from .storage import load_preferences, save_session_log
+from .assistant import start_jarvis_assistant
 
-app = typer.Typer(name="aida", help="🍅 AIDA - Adaptive Intelligent Day Assistant")
+app = typer.Typer(name="aida", help="AIDA - Adaptive Intelligent Day Assistant")
 console = Console()
 
 
@@ -101,7 +102,7 @@ def plan(
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress output"),
     start_from_now: bool = typer.Option(True, "--start-from-now/--start-from-workday", help="Start planning from current time vs workday start")
 ):
-    """📋 Generate a day plan from tasks and events"""
+    """Generate a day plan from tasks and events"""
     
     # Load and process plan
     request = load_plan_request(plan_file)
@@ -130,7 +131,7 @@ def run(
     save_log: bool = typer.Option(True, "--save/--no-save", help="Save session log"),
     start_from_now: bool = typer.Option(True, "--start-from-now/--start-from-workday", help="Start planning from current time vs workday start")
 ):
-    """🏃 Generate plan and run timer"""
+    """Generate plan and run timer"""
     
     # Load and process plan
     request = load_plan_request(plan_file)
@@ -162,7 +163,7 @@ def timer(
     start_index: int = typer.Option(0, "--start", "-s", help="Start from block index"),
     tts: bool = typer.Option(False, "--tts", help="Enable text-to-speech")
 ):
-    """⏰ Run timer on existing plan"""
+    """Run timer on existing plan"""
     
     # Load plan from file
     if not plan_file.exists():
@@ -198,9 +199,65 @@ def timer(
 
 @app.command()
 def status():
-    """📊 Show current timer status"""
-    rprint("📊 Timer status functionality not yet implemented")
-    rprint("💡 Use 'aida run' or 'aida timer' to start a session")
+    """Show current timer status"""
+    rprint("Timer status functionality not yet implemented")
+    rprint("Use 'aida run' or 'aida timer' to start a session")
+
+
+@app.command()
+def storage():
+    """Show storage locations and saved files"""
+    from .storage import get_storage_stats, AIDA_DIR
+    import os
+    
+    stats = get_storage_stats()
+    
+    console.print(Panel(
+        f"[bold cyan]AIDA Storage Information[/bold cyan]",
+        style="blue"
+    ))
+    
+    console.print(f"\n[bold]Storage Directory:[/bold] {stats['storage_dir']}")
+    console.print(f"[bold]Preferences File:[/bold] {'Exists' if stats['preferences_exists'] else 'Missing'}")
+    
+    # Show session logs
+    if stats['log_files']:
+        console.print(f"\n[bold]Session Logs:[/bold]")
+        for log_info in stats['log_files']:
+            console.print(f"  • {log_info['date']}: {log_info['entries']} sessions")
+        console.print(f"  [dim]Total: {stats['total_log_entries']} logged sessions[/dim]")
+    else:
+        console.print("\n[bold]Session Logs:[/bold] No logs found")
+    
+    # Show JARVIS generated plans
+    plans_dir = AIDA_DIR / "plans"
+    if plans_dir.exists():
+        plan_files = list(plans_dir.glob("*.json"))
+        if plan_files:
+            console.print(f"\n[bold]JARVIS Generated Plans:[/bold]")
+            # Sort by modification time (newest first)
+            plan_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+            for plan_file in plan_files[:10]:  # Show latest 10
+                mtime = os.path.getctime(plan_file)
+                from datetime import datetime
+                date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M")
+                console.print(f"  • {plan_file.name} ({date_str})")
+            if len(plan_files) > 10:
+                console.print(f"  [dim]... and {len(plan_files) - 10} more[/dim]")
+            console.print(f"  [dim]Location: {plans_dir}[/dim]")
+        else:
+            console.print(f"\n[bold]JARVIS Generated Plans:[/bold] None yet")
+    else:
+        console.print(f"\n[bold]JARVIS Generated Plans:[/bold] None yet")
+    
+    # Show database info if exists
+    if stats.get('sqlite_sessions', 0) > 0:
+        console.print(f"\n[bold]Database Sessions:[/bold] {stats['sqlite_sessions']}")
+    
+    console.print("\n[bold]Tips:[/bold]")
+    console.print("  • Session logs are created when you run timers")
+    console.print("  • JARVIS plans are auto-saved when generated")
+    console.print("  • Use 'aida plan' to load existing JSON files")
 
 
 @app.command()
@@ -210,12 +267,12 @@ def config(
     workday_end: Optional[str] = typer.Option(None, help="Set workday end (HH:MM)"),
     pomodoro_min: Optional[int] = typer.Option(None, help="Set pomodoro duration"),
 ):
-    """⚙️  Manage AIDA configuration"""
+    """Manage AIDA configuration"""
     
     if show:
         try:
             prefs = load_preferences()
-            table = Table(title="🔧 AIDA Configuration")
+            table = Table(title="AIDA Configuration")
             table.add_column("Setting", style="cyan")
             table.add_column("Value", style="green")
             
@@ -232,15 +289,74 @@ def config(
             rprint(f"❌ Error loading preferences: {e}")
             raise typer.Exit(1)
     else:
-        rprint("🔧 Configuration management not fully implemented yet")
-        rprint("💡 Edit examples/today.json to customize preferences for now")
+        rprint("Configuration management not fully implemented yet")
+        rprint("Edit examples/today.json to customize preferences for now")
+
+
+@app.command()
+def assistant():
+    """Start JARVIS-style conversational planning assistant"""
+    try:
+        start_jarvis_assistant()
+    except KeyboardInterrupt:
+        rprint("\nPlanning session ended. See you next time!")
+    except Exception as e:
+        rprint(f"Error starting assistant: {e}")
+        rprint("Make sure your OPENAI_API_KEY is set in the .env file")
+
+
+@app.command()
+def chat(
+    input_text: str = typer.Argument(..., help="Natural language description of your day"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Save generated plan to JSON file")
+):
+    """Quick natural language planning (single-shot mode)"""
+    rprint("AIDA Quick Planning Mode")
+    rprint(f"Processing: {input_text}")
+    
+    try:
+        from .assistant import JarvisAssistant
+        assistant = JarvisAssistant()
+        
+        # Get response from JARVIS for single input
+        response = assistant._get_jarvis_response(input_text)
+        
+        if "PLAN_READY:" in response:
+            parts = response.split("PLAN_READY:", 1)
+            json_data = parts[1].strip()
+            
+            plan_response = assistant._generate_plan_from_json(json_data)
+            if plan_response:
+                display_plan(plan_response.blocks, plan_response.summary)
+                
+                # Save to file if requested
+                if output:
+                    plan_data = {
+                        "preferences": plan_response.summary.model_dump() if hasattr(plan_response.summary, 'model_dump') else {},
+                        "tasks": [{"title": block.title, "estimate_min": block.duration_minutes} 
+                                for block in plan_response.blocks if block.type == "pomodoro"],
+                        "events": [{"title": block.title, "start": block.start.isoformat(), "end": block.end.isoformat()}
+                                 for block in plan_response.blocks if block.type == "event"]
+                    }
+                    with open(output, 'w') as f:
+                        json.dump(plan_data, f, indent=2, default=str)
+                    rprint(f"Plan saved to {output}")
+            else:
+                rprint("Could not generate plan from the input. Try the interactive mode: `aida assistant`")
+        else:
+            rprint(f"AIDA: {response}")
+            rprint("For full planning, try: `aida assistant` for interactive mode")
+            
+    except Exception as e:
+        rprint(f"Error: {e}")
+        rprint("Try the interactive mode: `aida assistant`")
 
 
 @app.command()
 def version():
-    """📋 Show AIDA version"""
+    """Show AIDA version"""
     from . import __version__
-    rprint(f"🍅 AIDA v{__version__}")
+    rprint(f"AIDA v{__version__}")
 
 
 if __name__ == "__main__":

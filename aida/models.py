@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Literal, List
+from typing import Optional, Literal, List, Dict, Any
 from datetime import datetime, timezone
 import uuid
 
@@ -144,3 +144,23 @@ class SessionLog(BaseModel):
     completed_blocks: List[int]
     summary: PlanSummary
     notes: Optional[str] = None
+
+
+class ConversationState(BaseModel):
+    """State management for JARVIS conversation"""
+    conversation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    messages: List[Dict[str, str]] = Field(default_factory=list)
+    extracted_tasks: List[Task] = Field(default_factory=list)
+    extracted_events: List[Event] = Field(default_factory=list)
+    preferences: Optional[Preferences] = None
+    is_complete: bool = False
+    completion_detected: bool = False
+
+
+class JarvisResponse(BaseModel):
+    """Structured response from JARVIS assistant"""
+    message: str
+    extracted_info: Dict[str, Any] = Field(default_factory=dict)
+    is_completion: bool = False
+    needs_clarification: bool = False
+    suggested_actions: List[str] = Field(default_factory=list)

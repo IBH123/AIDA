@@ -1,7 +1,7 @@
 {
   "preferences": {
-    "workday_start": "2025-08-25T09:00:00-07:00",
-    "workday_end": "2025-08-25T19:30:00-07:00",
+    "workday_start": "2025-08-25T09:30:00-07:00",
+    "workday_end": "2025-08-25T23:30:00-07:00",
     "pomodoro_min": 25,
     "break_min": 5,
     "long_break_min": 15,

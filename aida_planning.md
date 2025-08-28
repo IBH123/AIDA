@@ -315,9 +315,10 @@ energy_match = 2 if requires_deep_work and block_start in [9,12) else 0
 ## 17) Roadmap
 - **v0.1 (MVP)**: CLI + planner + timer + JSON logs. ✅ **COMPLETED**
 - **v0.1.1**: Real-time planning + tomorrow overflow suggestions. ✅ **COMPLETED**
-- **v0.2**: ICS export, configurable buffers, lunch detection.
-- **v0.3**: FastAPI service, simple web page (Swagger only), MCP tool stubs.
-- **v0.4**: Email draft + agenda generator (human‑in‑the‑loop send).
+- **v0.2**: LLM integration for natural language input and automatic today.json generation.
+- **v0.3**: ICS export, configurable buffers, lunch detection.
+- **v0.4**: FastAPI service, simple web page (Swagger only), MCP tool stubs.
+- **v0.5**: Email draft + agenda generator (human‑in‑the‑loop send).
 
 ### v0.1.1 Real-Time Planning Enhancements
 **Problem**: Original planner used `workday_start` from preferences, ignoring current time. Tasks that couldn't fit were just marked "unscheduled" without actionable suggestions.
@@ -335,9 +336,153 @@ energy_match = 2 if requires_deep_work and block_start in [9,12) else 0
 
 **Use Case**: User runs `aida plan` at 2PM → planning starts from 2PM, suggests overflow for tomorrow.
 
+### v0.2 JARVIS-Style Conversational Assistant
+**Goal**: Transform AIDA into an intelligent conversational assistant that talks like JARVIS from Iron Man, making day planning feel natural and engaging.
+
+**Problem**: Current workflow requires users to manually write structured JSON files with tasks, priorities, and events, which feels mechanical and not user-friendly.
+
+**Solution**: 
+- **JARVIS Personality**: Professional, intelligent, slightly witty assistant personality
+- **Conversational Flow**: Multi-turn dialogue that naturally extracts planning information
+- **Context Awareness**: Remembers conversation history and user preferences
+- **Intelligent Completion**: Knows when enough information is gathered to generate the plan
+- **Smooth Handoff**: Seamlessly transitions from conversation to plan execution
+
+**Key Features**:
+- JARVIS-style system prompt and personality
+- Interactive conversation mode (`aida assistant` command)
+- Context-aware multi-turn dialogue
+- Natural task and meeting extraction through conversation
+- User-triggered plan generation ("I'm done" or similar phrases)
+- Plan review and refinement before execution
+
+**Conversation Flow**:
+1. **Greeting**: "Good morning. I'm AIDA, your planning assistant. How may I help organize your day?"
+2. **Information Gathering**: Natural back-and-forth about tasks, priorities, meetings
+3. **Clarification**: Smart follow-up questions about timing, priorities, constraints
+4. **Completion Trigger**: User says "that's all" or "I'm finished" 
+5. **Plan Generation**: Creates and presents today.json
+6. **Execution**: Optional immediate planning and timer start
+
+**Use Cases**:
+```bash
+aida assistant
+> Good morning. I'm AIDA, ready to help you plan your day efficiently.
+> What are your priorities today?
+
+User: "I need to work on the WFIP3 paper and I have a team meeting at 2pm"
+> Excellent. The WFIP3 paper sounds important. How much time do you estimate you'll need?
+> And shall I block some buffer time around your 2pm meeting?
+
+User: "About 3 hours for the paper, and yes, 10 minutes buffer please"
+> Perfect. Any other tasks or commitments I should know about?
+
+User: "That's all for now"
+> Understood. Let me generate your optimized schedule...
+> *displays generated plan*
+> Shall I start your timer, or would you like to modify anything first?
+```
+
+**Technical Architecture**:
+- JARVIS personality system prompt with examples
+- Conversation state management
+- Context-aware response generation  
+- Smart completion detection
+- Seamless integration with existing planner
+
 ---
 
-## 18) Glossary
+## 18) v0.2 Implementation Procedures (Quick Implementation with Claude Code)
+
+### Core Components to Build
+
+**1. JARVIS Assistant Module** (`aida/assistant.py`)
+- OpenAI client with JARVIS personality system prompt
+- Conversation state management
+- Context-aware response generation
+- Task extraction from multi-turn dialogue
+
+**2. Enhanced CLI Commands**
+- `aida assistant` → Interactive JARVIS-style conversation mode
+- `aida chat "quick input"` → Single-shot natural language parsing (fallback)
+
+**3. Data Models** (extend existing `models.py`)
+- `ConversationState` model for dialogue management
+- `JarvisResponse` model for structured assistant replies
+- Enhanced prompt templates with JARVIS personality
+
+### Quick Implementation Steps
+
+**Step 1: Dependencies & Setup (15 min)**
+```bash
+pip install openai python-dotenv rich
+```
+
+**Step 2: Create JARVIS Assistant Module (45 min)**
+- `aida/assistant.py` with OpenAI client and JARVIS system prompt
+- Conversation loop with state management
+- Task extraction and completion detection
+- Integration with existing planner
+
+**Step 3: CLI Integration (20 min)**
+- Add `assistant` command to `cli.py`  
+- Interactive conversation loop
+- Plan generation and review workflow
+
+**Step 4: JARVIS Personality & Prompts (20 min)**
+- JARVIS-style system prompt with personality examples
+- Conversation templates and response formatting
+- Completion trigger detection
+
+### Environment Setup
+```bash
+# .env file
+OPENAI_API_KEY=your_openai_api_key_here
+AIDA_LLM_MODEL=gpt-4o-mini  # Sufficient for conversation
+```
+
+### Token Usage Estimates
+
+**Per Conversation Session:**
+- System prompt: ~400 tokens
+- Average conversation (5-8 turns): ~1,200 tokens
+- Context maintenance: ~300 tokens per turn
+- Plan generation: ~200 tokens
+- **Total per session: ~2,000-3,000 tokens**
+
+**Daily Usage (3-5 planning sessions):**
+- **~6,000-15,000 tokens/day**
+- **Cost: ~$0.01-0.03/day with gpt-4o-mini**
+
+**Implementation Cost (Claude Code assistance):**
+- **~50,000-75,000 tokens** (system design, code generation, testing)
+- **Implementation cost: ~$0.10-0.15**
+
+### Usage Examples
+```bash
+# Interactive JARVIS mode
+aida assistant
+> Good morning. I'm AIDA, your intelligent planning assistant.
+> Ready to help you organize your day efficiently. What are your priorities?
+
+# Quick single-shot mode (fallback)  
+aida chat "WFIP3 paper work, team meeting 2pm, reply to reviewers"
+```
+
+### File Structure Changes
+```
+aida/
+  assistant.py        # NEW: JARVIS conversational assistant
+  models.py           # EXTEND: Conversation state models
+  cli.py              # EXTEND: Add assistant command
+  prompts/            # NEW: Directory for prompt templates
+    jarvis_system.txt # JARVIS personality system prompt
+    examples.txt      # Few-shot conversation examples
+```
+
+---
+
+## 19) Glossary
 - **Block**: a contiguous chunk of time (event, pomodoro, break, long_break).
 - **Deep window**: hours with highest focus; initially 9–12 local time.
 - **MCP**: Model Context Protocol tools for external integrations.

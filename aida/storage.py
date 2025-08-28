@@ -26,8 +26,8 @@ def ensure_storage_dirs():
 def get_default_preferences() -> Preferences:
     """Get default preferences for new users"""
     now = datetime.now(timezone.utc)
-    workday_start = now.replace(hour=9, minute=0, second=0, microsecond=0)
-    workday_end = now.replace(hour=17, minute=30, second=0, microsecond=0)
+    workday_start = now.replace(hour=9, minute=30, second=0, microsecond=0)
+    workday_end = now.replace(hour=23, minute=30, second=0, microsecond=0)
     
     return Preferences(
         workday_start=workday_start,
